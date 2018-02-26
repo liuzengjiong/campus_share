@@ -110,7 +110,7 @@
            <!-- <property name="rootClass" value="com._520it.mybatis.domain.BaseDomain"/>-->
 
             <!-- 设置是否在getter方法中，对String类型字段调用trim()方法 -->
-            <property name="trimStrings" value="true"/>
+            <property name="trimStrings" value="false"/>
         </javaModelGenerator>
 
 
@@ -287,23 +287,6 @@
                 注意，一个table元素中可以有多个ignoreColumn元素
             <ignoreColumn column="deptId" delimitedColumnName=""/>
             -->
-        </table>
-
-        <table tableName="comment" >
-
-        <!-- 参考 javaModelGenerator 的 constructorBased属性-->
-        <property name="constructorBased" value="false"/>
-
-        <!-- 默认为false，如果设置为true，在生成的SQL中，table名字不会加上catalog或schema； -->
-        <property name="ignoreQualifiersAtRuntime" value="false"/>
-
-        <!-- 参考 javaModelGenerator 的 immutable 属性 -->
-        <property name="immutable" value="false"/>
-
-        <!-- 指定是否只生成domain类，如果设置为true，只生成domain类，如果还配置了sqlMapGenerator，那么在mapper XML文件中，只生成resultMap元素 -->
-        <property name="modelOnly" value="false"/>
-        <!-- 如果设置为true，生成的model类会直接使用column本身的名字，而不会再使用驼峰命名方法，比如BORN_DATE，生成的属性名字就是BORN_DATE,而不会是bornDate -->
-        <property name="useActualColumnNames" value="false"/>
         </table>
 
     </context>

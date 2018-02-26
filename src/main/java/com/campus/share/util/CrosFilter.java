@@ -1,5 +1,6 @@
 package com.campus.share.util;
 
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
@@ -10,6 +11,7 @@ import java.io.IOException;
  * 跨域
  */
 @Component
+@Order(Integer.MIN_VALUE)
 public class CrosFilter implements Filter {
 
     final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(CrosFilter.class);
@@ -21,7 +23,7 @@ public class CrosFilter implements Filter {
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
         response.setHeader("Access-Control-Max-Age", "3600");
-        response.setHeader("Access-Control-Allow-Headers", "x-requested-with,Content-Type");
+        response.setHeader("Access-Control-Allow-Headers", "x-requested-with,Content-Type,Authorization");
         System.out.println("*********************************过滤器被使用**************************");
         chain.doFilter(req, res);
     }
