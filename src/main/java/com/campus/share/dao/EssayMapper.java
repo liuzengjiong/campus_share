@@ -120,6 +120,7 @@ public interface EssayMapper {
             "update_time, content)",
             "values (#{essayId,jdbcType=BIGINT}, #{authorId,jdbcType=BIGINT}, ",
             "#{title,jdbcType=VARCHAR}, #{summary,jdbcType=VARCHAR}, ",
+            "#{essayStatus,jdbcType=INTEGER}, ",
             "#{readNum,jdbcType=INTEGER}, #{essayTypeKey,jdbcType=VARCHAR}, ",
             "#{resourceTypeKey,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, ",
             "#{updateTime,jdbcType=TIMESTAMP}, #{content,jdbcType=LONGVARCHAR})"

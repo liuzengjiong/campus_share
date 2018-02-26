@@ -66,6 +66,11 @@ public class EssayServiceImpl implements EssayService{
             return false;
         }
 
+        if(essay.getEssayId() == null){
+            logger.error("essayId为null，取消发布任务");
+            throw  new BusinessException(CodeEnum.FAIL.getCode(),"抱歉，发布失败，请稍后重试");
+        }
+
         Reward reward = essay.getReward();
         if(reward != null){
             if(StringUtils.isEmpty(reward.getRewardTypeValue())){
