@@ -136,7 +136,7 @@
                             <manifest>
                                 <addClasspath>true</addClasspath>
                                 <classpathPrefix>lib/</classpathPrefix>
-                                <mainClass>com.campus.share.App.Main</mainClass>
+                                <mainClass>com.campus.share.App</mainClass>
                             </manifest>
                         </archive>
                     </configuration>
