@@ -5,6 +5,10 @@ import java.util.List;
 
 public class Essay {
 
+    public static final int OPENED = 0;
+
+    public static final int CLOSED = 1;
+
     //添加关联的属性 -- begin
 
     private UserInfo author;

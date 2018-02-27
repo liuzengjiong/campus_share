@@ -2,6 +2,7 @@ package com.campus.share.service;
 
 import com.campus.share.bean.vo.EssayVO;
 import com.campus.share.model.Essay;
+import com.campus.share.model.UserLogin;
 import com.github.pagehelper.PageInfo;
 
 public interface EssayService {
@@ -16,5 +17,13 @@ public interface EssayService {
     Essay selectSimpleInfo(Long essayId);
 
     boolean changeStatus(Long essayId,Integer essayStatus);
+
+    boolean receiveEssay(Essay essay, UserLogin userLogin);
+
+    boolean completeEssay(Essay essay,UserLogin userLogin,String description);
+
+    boolean comfirmEssay(Essay essay,UserLogin userLogin,Long receiverId);
+
+    boolean checkEssayStatus(Long essayId,Integer essayStatus);
 
 }

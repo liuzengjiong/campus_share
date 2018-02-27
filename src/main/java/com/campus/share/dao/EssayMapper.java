@@ -201,5 +201,12 @@ public interface EssayMapper {
     })
     List<EssayVO>  searchEssay(Map<String,String> param);
 
+    @Select({
+            "select",
+            "count(1)",
+            "from essay",
+            "where essay_id = #{param1,jdbcType=BIGINT} && essay_status = #{param2,jdbcType=BIGINT}"
+    })
+    int checkEssayStatus(Long essayId,Integer essayStatus);
 
 }

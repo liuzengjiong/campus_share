@@ -3,12 +3,14 @@ package com.campus.share.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.campus.share.bean.Result;
 import com.campus.share.bean.vo.EssayVO;
+import com.campus.share.bean.vo.OperateParam;
 import com.campus.share.constant.CodeEnum;
 import com.campus.share.constant.FieldConstant;
 import com.campus.share.constant.FileConstant;
 import com.campus.share.exception.BusinessException;
 import com.campus.share.model.Config;
 import com.campus.share.model.Essay;
+import com.campus.share.model.FlowNode;
 import com.campus.share.model.UserLogin;
 import com.campus.share.service.ConfigService;
 import com.campus.share.service.EssayService;
@@ -31,7 +33,7 @@ import java.lang.reflect.Field;
 @RequestMapping("/essay")
 public class EssayController {
 
-    Logger logger = LoggerFactory.getLogger(EssayController.class);
+    private final Logger logger = LoggerFactory.getLogger(EssayController.class);
 
     @Autowired
     private EssayService essayService;
@@ -97,8 +99,6 @@ public class EssayController {
         if(essay == null){
             throw new BusinessException(CodeEnum.FAIL_ESSAY_NOT_EXIST);
         }
-        logger.info(JSONObject.toJSONString(userLogin));
-        logger.info(JSONObject.toJSONString(essay));
         if(userLogin == null || userLogin.getUserId() != essay.getAuthorId()){
             throw new BusinessException(CodeEnum.NO_PERMISSION);
         }
@@ -112,4 +112,32 @@ public class EssayController {
     }
 
 
+    @RequestMapping(value = "/{essayId}/{operateType}" , method = RequestMethod.POST)
+    public Result receiveEssay(@PathVariable Long essayId,@PathVariable String operateType,
+                               @RequestBody OperateParam param,
+                               HttpServletRequest request){
+        logger.info("操作类型： {} " , operateType);
+        Result result = new Result();
+        UserLogin userLogin = (UserLogin) request.getAttribute("userLogin");
+        Essay essay = essayService.selectSimpleInfo(essayId);
+        if(essay == null){
+            throw new BusinessException(CodeEnum.FAIL_ESSAY_NOT_EXIST);
+        }
+        if(userLogin == null){
+            throw new BusinessException(CodeEnum.UNLOGIN);
+        }
+        boolean optionResult = false;
+        switch (operateType){
+            case FlowNode.ACT_RECEIVE : optionResult = essayService.receiveEssay(essay,userLogin);break;
+            case FlowNode.ACT_COMPLETE: optionResult = essayService.completeEssay(essay,userLogin,param.getDescription());break;
+            case FlowNode.ACT_COMFIRM: optionResult = essayService.comfirmEssay(essay,userLogin,param.getReceiverId());break;
+            default: break;
+        }
+        if(optionResult){
+            result.setInfoByEnum(CodeEnum.SUCCESS);
+        }else{
+            result.setInfoByEnum(CodeEnum.FAIL);
+        }
+        return result;
+    }
 }

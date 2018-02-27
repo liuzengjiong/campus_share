@@ -1,17 +1,15 @@
 package com.campus.share.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.campus.share.bean.vo.EssayVO;
 import com.campus.share.constant.CodeEnum;
 import com.campus.share.constant.FieldConstant;
 import com.campus.share.dao.EssayMapper;
-import com.campus.share.dao.FlowNodeMapper;
-import com.campus.share.dao.RewardMapper;
 import com.campus.share.exception.BusinessException;
 import com.campus.share.model.*;
 import com.campus.share.service.ConfigService;
 import com.campus.share.service.EssayService;
 import com.campus.share.service.FlowNodeService;
+import com.campus.share.service.RewardService;
 import com.campus.share.util.SimpleStringUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -24,7 +22,6 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Field;
 import java.util.*;
 
 @Service
@@ -42,10 +39,7 @@ public class EssayServiceImpl implements EssayService{
     private FlowNodeService flowNodeService;
 
     @Autowired
-    private RewardMapper rewardMapper;
-
-    @Autowired
-    private FlowNodeMapper flowNodeMapper;
+    private RewardService rewardService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.DEFAULT,timeout=36000,rollbackFor=Exception.class)
@@ -55,6 +49,7 @@ public class EssayServiceImpl implements EssayService{
             summary = summary.substring(0,50);
         }
         essay.setSummary(summary);
+        essay.setEssayStatus(0);
         essay.setReadNum(0);
         essay.setCreateTime(new Date());
         essay.setUpdateTime(new Date());
@@ -79,19 +74,19 @@ public class EssayServiceImpl implements EssayService{
             reward.setRewardTypeKey(configService.getConfigKey(FieldConstant.REWARD_TYPE,reward.getRewardTypeValue()));
             reward.setEssayId(essay.getEssayId());
             logger.info("保存报酬.......");
-            if(rewardMapper.insert(reward) != 1){
+            if(rewardService.insert(reward) != 1){
                 logger.error("报酬保存失败，取消发布任务");
                 throw  new BusinessException(CodeEnum.FAIL.getCode(),"抱歉，发布失败，请稍后重试");
             }
             FlowNode startNode = new FlowNode();
             startNode.setEssayId(essay.getEssayId());
-            startNode.setNodeKey("published");
+            startNode.setNodeKey(FlowNode.PUBLISHED);
             startNode.setActorId(essay.getAuthorId());
             startNode.setActTime(new Date());
             startNode.setRemark("创建了任务，启动流程");
             startNode.setStatus(0);
             logger.info("保存流程.......");
-            if(flowNodeMapper.insert(startNode) != 1){
+            if(flowNodeService.insert(startNode) != 1){
                 logger.error("流程保存失败，取消发布任务");
                 throw  new BusinessException(CodeEnum.FAIL.getCode(),"抱歉，发布失败，请稍后重试");
             }
@@ -154,6 +149,99 @@ public class EssayServiceImpl implements EssayService{
     public boolean changeStatus(Long essayId, Integer essayStatus) {
         logger.info("修改任务状态");
         return essayMapper.changeStatus(essayId,essayStatus) > 0 ;
+    }
+
+    @Override
+    public boolean receiveEssay(Essay essay, UserLogin userLogin) {
+        FlowNode lastNode = flowNodeService.getLastNode(essay.getEssayId(),userLogin.getUserId());
+        if(lastNode != null){
+            throw new BusinessException(CodeEnum.FAIL.getCode(),"你已在此任务的流程中");
+        }
+
+       /* if(this.checkEssayStatus(essay.getEssayId(),Essay.CLOSED)){*/
+       if(essay.getEssayStatus() == Essay.CLOSED){
+            throw new BusinessException(CodeEnum.FAIL.getCode(),"该任务已关闭，无法接受");
+        }
+
+        Reward reward = rewardService.getReward(essay.getEssayId());
+        if(reward == null){
+            throw new BusinessException(CodeEnum.FAIL.getCode(),"任务无报酬，无法接受");
+        }
+
+        if(reward.getMaxReceiveNum() != 0 &&
+                reward.getMaxReceiveNum() <= flowNodeService.countInProgressNodeNum(essay.getEssayId())){
+            throw new BusinessException(CodeEnum.FAIL.getCode(),"任务已到达最大接受限制");
+        }
+
+        FlowNode receiveNode = new FlowNode();
+        receiveNode.setStatus(0);
+        receiveNode.setRemark("接受任务");
+        receiveNode.setActTime(new Date());
+        receiveNode.setNodeKey(FlowNode.IN_PROGRESS);
+        receiveNode.setEssayId(essay.getEssayId());
+        receiveNode.setActorId(userLogin.getUserId());
+
+        if(flowNodeService.insert(receiveNode) != 1){
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean completeEssay(Essay essay, UserLogin userLogin,String description) {
+        FlowNode lastNode = flowNodeService.getLastNode(essay.getEssayId(),userLogin.getUserId());
+        if(lastNode == null){
+            throw new BusinessException(CodeEnum.FAIL.getCode(),"您还未接受此任务");
+        }
+        if(!FlowNode.IN_PROGRESS.equals(lastNode.getNodeKey())){
+            throw new BusinessException(CodeEnum.FAIL.getCode(),"上一步骤必须是进行中");
+        }
+        if(StringUtils.isEmpty(description)){
+            throw new BusinessException(CodeEnum.FAIL.getCode(),"完成描述不能为空");
+        }
+        FlowNode receiveNode = new FlowNode();
+        receiveNode.setStatus(0);
+        receiveNode.setRemark(description);
+        receiveNode.setActTime(new Date());
+        receiveNode.setNodeKey(FlowNode.WAIT_CONFIRM);
+        receiveNode.setEssayId(essay.getEssayId());
+        receiveNode.setActorId(userLogin.getUserId());
+
+        if(flowNodeService.insert(receiveNode) != 1){
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean comfirmEssay(Essay essay, UserLogin userLogin, Long receiverId) {
+        if(userLogin.getUserId() != essay.getAuthorId()) {
+            throw new BusinessException(CodeEnum.NO_PERMISSION);
+        }
+        FlowNode lastNode = flowNodeService.getLastNode(essay.getEssayId(),receiverId);
+        if(lastNode == null){
+            throw new BusinessException(CodeEnum.FAIL.getCode(),"该用户无接受记录");
+        }
+        if(!FlowNode.WAIT_CONFIRM.equals(lastNode.getNodeKey())){
+            throw new BusinessException(CodeEnum.FAIL.getCode(),"该用户还未完成任务");
+        }
+        FlowNode receiveNode = new FlowNode();
+        receiveNode.setStatus(0);
+        receiveNode.setRemark("任务发布者确认任务完成有效");
+        receiveNode.setActTime(new Date());
+        receiveNode.setNodeKey(FlowNode.DONE);
+        receiveNode.setEssayId(essay.getEssayId());
+        receiveNode.setActorId(receiverId);
+
+        if(flowNodeService.insert(receiveNode) != 1){
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean checkEssayStatus(Long essayId, Integer essayStatus) {
+        return essayMapper.checkEssayStatus(essayId,essayStatus) > 0;
     }
 
     private void setValueByKey(EssayVO essay){
