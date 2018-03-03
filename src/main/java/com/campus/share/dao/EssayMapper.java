@@ -157,6 +157,59 @@ public interface EssayMapper {
     })
     EssayVO selectFullInfoByPrimaryKey(Long essayId);
 
+    @Select({
+            "select",
+            "essay_id, author_id, title, summary, read_num, essay_type_key, resource_type_key, ",
+            "create_time, update_time, essay_status",
+            "from essay",
+            "where essay_id = #{essayId,jdbcType=BIGINT}"
+    })
+    @Results({
+            @Result(column="essay_id", property="essayId", jdbcType=JdbcType.BIGINT, id=true),
+            @Result(column="author_id", property="authorId", jdbcType=JdbcType.BIGINT),
+            @Result(column="title", property="title", jdbcType=JdbcType.VARCHAR),
+            @Result(column="summary", property="summary", jdbcType=JdbcType.VARCHAR),
+            @Result(column="read_num", property="readNum", jdbcType=JdbcType.INTEGER),
+            @Result(column="essay_type_key", property="essayTypeKey", jdbcType=JdbcType.VARCHAR),
+            @Result(column="resource_type_key", property="resourceTypeKey", jdbcType=JdbcType.VARCHAR),
+            @Result(column="create_time", property="createTime", jdbcType=JdbcType.TIMESTAMP),
+            @Result(column="update_time", property="updateTime", jdbcType=JdbcType.TIMESTAMP),
+            @Result(column="essay_status", property="essayStatus", jdbcType=JdbcType.INTEGER),
+            @Result(column="author_id",property="author",one=@One(
+                    select="com.campus.share.dao.UserInfoMapper.selectByPrimaryKey",fetchType= FetchType.EAGER)),
+            @Result(column="essay_id",property="reward",one=@One(
+                    select="com.campus.share.dao.RewardMapper.selectByEssayId",fetchType= FetchType.EAGER))
+    })
+    EssayVO selectSimpleInfoByPrimaryKey(Long essayId);
+
+    @Select({
+            "select",
+            "essay_id, author_id, title, summary, read_num, essay_type_key, resource_type_key, ",
+            "create_time, update_time, essay_status",
+            "from essay",
+            "where author_id = #{authorId,jdbcType=BIGINT}",
+            "order by update_time desc"
+    })
+    @Results({
+            @Result(column="essay_id", property="essayId", jdbcType=JdbcType.BIGINT, id=true),
+            @Result(column="author_id", property="authorId", jdbcType=JdbcType.BIGINT),
+            @Result(column="title", property="title", jdbcType=JdbcType.VARCHAR),
+            @Result(column="summary", property="summary", jdbcType=JdbcType.VARCHAR),
+            @Result(column="read_num", property="readNum", jdbcType=JdbcType.INTEGER),
+            @Result(column="essay_type_key", property="essayTypeKey", jdbcType=JdbcType.VARCHAR),
+            @Result(column="resource_type_key", property="resourceTypeKey", jdbcType=JdbcType.VARCHAR),
+            @Result(column="create_time", property="createTime", jdbcType=JdbcType.TIMESTAMP),
+            @Result(column="update_time", property="updateTime", jdbcType=JdbcType.TIMESTAMP),
+            @Result(column="essay_status", property="essayStatus", jdbcType=JdbcType.INTEGER),
+            @Result(column="author_id",property="author",one=@One(
+                    select="com.campus.share.dao.UserInfoMapper.selectByPrimaryKey",fetchType= FetchType.EAGER)),
+            @Result(column="essay_id",property="commentNum",one=@One(
+                    select="com.campus.share.dao.CommentMapper.countByEssayId",fetchType= FetchType.EAGER)),
+            @Result(column="essay_id",property="reward",one=@One(
+                    select="com.campus.share.dao.RewardMapper.selectByEssayId",fetchType= FetchType.EAGER))
+    })
+    List<EssayVO> searchSimpleInfoByAuthorId(Long authorId);
+
     @Update({
             "update essay",
             "set read_num = read_num+1",

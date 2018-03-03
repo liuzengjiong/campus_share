@@ -244,6 +244,15 @@ public class EssayServiceImpl implements EssayService{
         return essayMapper.checkEssayStatus(essayId,essayStatus) > 0;
     }
 
+    @Override
+    public List<EssayVO> getUserEssay(Long authorId) {
+        List<EssayVO> list = essayMapper.searchSimpleInfoByAuthorId(authorId);
+        for(EssayVO essay : list){
+            this.setValueByKey(essay);
+        }
+        return list;
+    }
+
     private void setValueByKey(EssayVO essay){
         essay.setResourceType(configService.getConfigValue(FieldConstant.SOURCE_TYPE,essay.getResourceTypeKey()));
         essay.setEssayType(configService.getConfigValue(FieldConstant.ESSAY_TYPE,essay.getEssayTypeKey()));

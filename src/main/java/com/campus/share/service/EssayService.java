@@ -5,6 +5,8 @@ import com.campus.share.model.Essay;
 import com.campus.share.model.UserLogin;
 import com.github.pagehelper.PageInfo;
 
+import java.util.List;
+
 public interface EssayService {
 
     boolean add(EssayVO essay);
@@ -25,5 +27,7 @@ public interface EssayService {
     boolean comfirmEssay(Essay essay,UserLogin userLogin,Long receiverId);
 
     boolean checkEssayStatus(Long essayId,Integer essayStatus);
+
+    List<EssayVO> getUserEssay(Long authorId);
 
 }

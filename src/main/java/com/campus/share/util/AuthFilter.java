@@ -29,7 +29,8 @@ public class AuthFilter implements Filter {
             "/login",
             "/essay/list",
             "/image",
-            "/upload"
+            "/upload",
+            "/flow-node"
     };
 
     @Autowired

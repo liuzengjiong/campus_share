@@ -65,9 +65,9 @@ public class MD5Util {
 
     public static void main(String[] args) {
         UserLogin userLogin = new UserLogin();
-        userLogin.setUserId(2L);
-        userLogin.setUserNo("wxy123");
-        userLogin.setPassword("wxy123");
+        userLogin.setUserId(3L);
+        userLogin.setUserNo("222222");
+        userLogin.setPassword("222222");
         System.out.println(getMD5(userLogin));
     }
 
