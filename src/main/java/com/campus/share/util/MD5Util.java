@@ -60,14 +60,14 @@ public class MD5Util {
      * @date 2016/12/9 20:09
      */
     public static String getMD5(UserLogin userLogin) {
-        return getMD5(userLogin.getUserNo(), userLogin.getPassword(), String.valueOf(userLogin.getUserId()));
+        return getMD5(userLogin.getUserNo(), userLogin.getPassword());
     }
 
     public static void main(String[] args) {
         UserLogin userLogin = new UserLogin();
         userLogin.setUserId(3L);
-        userLogin.setUserNo("222222");
-        userLogin.setPassword("222222");
+        userLogin.setUserNo("111111");
+        userLogin.setPassword("111111");
         System.out.println(getMD5(userLogin));
     }
 

@@ -2,12 +2,9 @@ package com.campus.share.dao;
 
 import com.campus.share.model.UserInfo;
 import java.util.List;
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.Results;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+
+import com.campus.share.sql.UserInfoProvider;
+import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.type.JdbcType;
 
 public interface UserInfoMapper {
@@ -98,4 +95,15 @@ public interface UserInfoMapper {
             "where user_id = #{userId,jdbcType=BIGINT}"
     })
     int updateByPrimaryKey(UserInfo record);
+
+    @UpdateProvider(type = UserInfoProvider.class, method = "updateUserInfo")
+    @Results({@Result(column = "user_id", property = "userId", jdbcType = JdbcType.BIGINT, id = true),
+            @Result(column = "nickname", property = "nickname", jdbcType = JdbcType.VARCHAR),
+            @Result(column = "phone", property = "phone", jdbcType = JdbcType.VARCHAR),
+            @Result(column = "major", property = "major", jdbcType = JdbcType.VARCHAR),
+            @Result(column = "point", property = "point", jdbcType = JdbcType.INTEGER),
+            @Result(column = "avatar_path", property = "avatarPath", jdbcType = JdbcType.VARCHAR)
+    })
+    public int updateInfo(@Param("userInfo") UserInfo userInfo);
+
 }

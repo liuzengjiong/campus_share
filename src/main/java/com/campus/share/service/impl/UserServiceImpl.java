@@ -6,6 +6,7 @@ import com.campus.share.constant.CodeEnum;
 import com.campus.share.constant.AppConfig;
 import com.campus.share.dao.UserInfoMapper;
 import com.campus.share.dao.UserLoginMapper;
+import com.campus.share.exception.BusinessException;
 import com.campus.share.model.UserInfo;
 import com.campus.share.model.UserLogin;
 import com.campus.share.service.UserService;
@@ -15,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
@@ -74,4 +76,49 @@ public class UserServiceImpl implements UserService{
 
         return result;
     }
+
+    @Override
+    public Result update(UserInfo userInfo,String serverPath) {
+        Result result = new Result();
+        if(userInfoMapper.updateInfo(userInfo) > 0){
+            result.setInfoByEnum(CodeEnum.SUCCESS);
+            UserInfo newInfo = userInfoMapper.selectByPrimaryKey(userInfo.getUserId());
+            SimpleStringUtil.setAvatarUrl(newInfo,serverPath);
+            result.setData(newInfo);
+
+        }else{
+            result.setInfoByEnum(CodeEnum.FAIL);
+        }
+        return result;
+    }
+
+    @Override
+    public UserInfo get(Long userId) {
+        return userInfoMapper.selectByPrimaryKey(userId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result register(UserLogin userLogin, UserInfo userInfo) {
+        if(StringUtils.isEmpty(userLogin.getUserNo()) || StringUtils.isEmpty(userLogin.getPassword())){
+            throw new BusinessException(CodeEnum.FAIL.getCode(),"用户名和密码不能为空");
+        }
+        UserLogin haveUser = userLoginMapper.selectByUserNo(userLogin.getUserNo());
+        if(haveUser!=null){
+            throw new BusinessException(CodeEnum.FAIL.getCode(),"该帐号已被注册");
+        }
+        String encryptPwd = MD5Util.getMD5(userLogin);
+        userLogin.setPassword(encryptPwd);
+
+        Result result = new Result();
+        if(userLoginMapper.insert(userLogin) == 1 && userInfoMapper.insert(userInfo) == 1){
+            result.setInfoByEnum(CodeEnum.SUCCESS);
+        }else {
+            result.setInfoByEnum(CodeEnum.FAIL);
+        }
+
+        return result;
+    }
+
+
 }

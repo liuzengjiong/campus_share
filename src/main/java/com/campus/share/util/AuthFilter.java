@@ -27,10 +27,9 @@ public class AuthFilter implements Filter {
 
     private final String[] unCheckList = new String[]{
             "/login",
-            "/essay/list",
+            "/register",
             "/image",
-            "/upload",
-            "/flow-node"
+            "/essay/list"
     };
 
     @Autowired
