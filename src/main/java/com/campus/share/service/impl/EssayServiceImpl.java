@@ -1,6 +1,8 @@
 package com.campus.share.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.campus.share.bean.vo.EssayVO;
+import com.campus.share.bean.vo.req.SearchEssayReq;
 import com.campus.share.constant.CodeEnum;
 import com.campus.share.constant.FieldConstant;
 import com.campus.share.dao.EssayMapper;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 
@@ -96,16 +99,29 @@ public class EssayServiceImpl implements EssayService{
     }
 
     @Override
-    public PageInfo<EssayVO> searchEssay(String keyword, String essayType, String sourceType,int page,int pageSize,String serverPath) {
-        Map<String,String> param = new HashMap<>();
-        if(keyword != null){
-            param.put("keyword",keyword);
+    public PageInfo<EssayVO> searchEssay(SearchEssayReq searchReq, int page, int pageSize, String serverPath) {
+        Map<String,Object> param = new HashMap<>();
+        if(!StringUtils.isEmpty(searchReq.getKeyword())){
+            param.put("keyword",searchReq.getKeyword());
         }
-        if(essayType != null){
-            param.put("essayTypeKey",configService.getConfigKey(FieldConstant.ESSAY_TYPE,essayType));
+        if(!StringUtils.isEmpty(searchReq.getEssayType())){
+            param.put("essayTypeKey",configService.getConfigKey(FieldConstant.ESSAY_TYPE,searchReq.getEssayType()));
         }
-        if(sourceType != null){
-            param.put("sourceTypeKey",configService.getConfigKey(FieldConstant.SOURCE_TYPE,sourceType));
+        if(!CollectionUtils.isEmpty(searchReq.getResourceTypes())){
+            List<String> sourceTypeKeys = new ArrayList<>();
+            for(int i=0;i<searchReq.getResourceTypes().size();i++){
+                String sourceType = searchReq.getResourceTypes().getString(i);
+                sourceTypeKeys.add(configService.getConfigKeyNoStrict(FieldConstant.SOURCE_TYPE,sourceType));
+            }
+            param.put("sourceTypeKeys",sourceTypeKeys);
+        }
+        if(!CollectionUtils.isEmpty(searchReq.getRewardTypes())){
+            List<String> rewardTypeKeys = new ArrayList<>();
+            for(int i=0;i<searchReq.getRewardTypes().size();i++){
+                String rewardType = searchReq.getRewardTypes().getString(i);
+                rewardTypeKeys.add(configService.getConfigKeyNoStrict(FieldConstant.REWARD_TYPE,rewardType));
+            }
+            param.put("rewardTypeKeys",rewardTypeKeys);
         }
         PageHelper.startPage(page, pageSize);
         logger.info("开始获取任务列表");

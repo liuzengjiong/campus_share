@@ -2,12 +2,8 @@ package com.campus.share.dao;
 
 import com.campus.share.model.UserLogin;
 import java.util.List;
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.Results;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+
+import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.type.JdbcType;
 
 public interface UserLoginMapper {
@@ -37,6 +33,7 @@ public interface UserLoginMapper {
         "#{password,jdbcType=VARCHAR}, #{lastLoginTime,jdbcType=TIMESTAMP}, ",
         "#{userStatus,jdbcType=BIT}, #{token,jdbcType=CHAR}, #{tokenInvalidTime,jdbcType=TIMESTAMP})"
     })
+    @Options(useGeneratedKeys=true, keyProperty="userId", keyColumn="user_id")
     int insert(UserLogin record);
 
     /**

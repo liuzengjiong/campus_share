@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.campus.share.bean.Result;
 import com.campus.share.bean.vo.EssayVO;
 import com.campus.share.bean.vo.OperateParam;
+import com.campus.share.bean.vo.req.SearchEssayReq;
 import com.campus.share.constant.CodeEnum;
 import com.campus.share.constant.FieldConstant;
 import com.campus.share.constant.FileConstant;
@@ -64,15 +65,16 @@ public class EssayController {
 
 
     @RequestMapping(value= "/list/{page}/{pageSize}" , method = RequestMethod.GET)
-    public Result list(String keyword, String essayType, String sourceType,
+    public Result list(
                        @PathVariable Integer page, @PathVariable Integer pageSize,
+                       SearchEssayReq searchReq,
                        HttpServletRequest request){
         if(page < 1){
             page = 1;
         }
 
         Result result = new Result();
-        PageInfo<EssayVO> pageInfo = essayService.searchEssay(keyword,essayType,sourceType,page,pageSize,fileConstant.getServerBasePath(request));
+        PageInfo<EssayVO> pageInfo = essayService.searchEssay(searchReq,page,pageSize,fileConstant.getServerBasePath(request));
         result.setCode(CodeEnum.SUCCESS.getCode());
         result.setData(pageInfo);
         return result;

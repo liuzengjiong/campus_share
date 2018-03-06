@@ -29,6 +29,7 @@ public class AuthFilter implements Filter {
             "/login",
             "/register",
             "/image",
+            "/upload",
             "/essay/list"
     };
 

@@ -111,12 +111,16 @@ public class UserServiceImpl implements UserService{
         userLogin.setPassword(encryptPwd);
 
         Result result = new Result();
-        if(userLoginMapper.insert(userLogin) == 1 && userInfoMapper.insert(userInfo) == 1){
-            result.setInfoByEnum(CodeEnum.SUCCESS);
-        }else {
-            result.setInfoByEnum(CodeEnum.FAIL);
+        int x = userLoginMapper.insert(userLogin);
+        if(x == 1){
+            userInfo.setUserId(userLogin.getUserId());
+        }else{
+            throw new BusinessException(CodeEnum.FAIL.getCode(),"抱歉，注册失败，请稍后重试");
         }
-
+        if(userInfoMapper.insert(userInfo) != 1){
+            throw new BusinessException(CodeEnum.FAIL.getCode(),"抱歉，注册失败，请稍后重试");
+        }
+        result.setInfoByEnum(CodeEnum.SUCCESS);
         return result;
     }
 

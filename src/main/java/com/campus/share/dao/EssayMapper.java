@@ -252,7 +252,7 @@ public interface EssayMapper {
                     select="com.campus.share.dao.RewardMapper.selectByEssayId",fetchType= FetchType.EAGER))
 
     })
-    List<EssayVO>  searchEssay(Map<String,String> param);
+    List<EssayVO>  searchEssay(Map<String,Object> param);
 
     @Select({
             "select",

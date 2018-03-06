@@ -105,4 +105,20 @@ public class ConfigServiceImpl implements ConfigService {
         logger.error("类型{}中无{}对应键值",type,value);
         throw new BusinessException(CodeEnum.FAIL_CONFIG_NOT_MATCH);
     }
+
+    @Override
+    public String getConfigKeyNoStrict(String type, String value) {
+        List<Config> configList = getConfigsByType(type);
+        if(configList == null){
+            logger.error("类型{}未找到",type);
+            return value;
+        }
+        for(Config config : configList){
+            if(config.getConfigValue().equals(value)){
+                return config.getConfigKey();
+            }
+        }
+        logger.error("类型{}中无{}对应键值",type,value);
+        return value;
+    }
 }

@@ -35,4 +35,6 @@ public interface ConfigService {
      */
     String getConfigKey(String type,String value);
 
+    String getConfigKeyNoStrict(String type,String value);
+
 }
